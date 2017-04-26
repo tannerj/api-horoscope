@@ -5,10 +5,14 @@ require 'oauth'
 require 'sinatra'
 
 get '/' do
-  @prediction = ['🍰', '💔', '💪', '🏆', '🐷', '🍕', '🤖'].sample
   @wiki_title = get_wiki_title
-  @fortune = twitter_prediction( @wiki_title )
+  @prediction = "You will have a day full of #{@wiki_title}."
   erb :index
+end
+
+post '/' do
+  tweet_prediction( params[:prediction] )
+  redirect to("/")
 end
 
 def get_wiki_title
@@ -17,6 +21,20 @@ def get_wiki_title
   body["query"]["random"][0]['title']
 end
 
-def twitter_prediction(wiki_title)
-  "You will have a day full of #{@wiki_title}."
+def tweet_prediction( prediction )
+  consumer = OAuth::Consumer.new(
+               ENV['API_KEY'], 
+               ENV['API_SECRET'],
+               { site: 'https://api.twitter.com', scheme: 'header' }
+             )
+  token_hash = { 
+    oauth_token: ENV['ACCESS_TOKEN'], 
+    oauth_token_secret: ENV['ACCESS_TOKEN_SECRET'] 
+  }
+  access_token = OAuth::AccessToken.from_hash(consumer, token_hash )
+  access_token.request(
+    :post, 
+    'https://api.twitter.com/1.1/statuses/update.json', 
+    status: prediction
+  )
 end

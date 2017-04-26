@@ -1,5 +1,11 @@
 <div class="horoscope">
-  <%= @fortune %>
+  <%= @prediction %>
+  <p>
+    <form method="post" action="/">
+        <input type="hidden" name="prediction" value="<%= @prediction %>">
+        <button type="submit">Post to Twitter</button>
+    </form>
+  </p>
   <p>
     <a href="/">Try again</a>
   </p>
